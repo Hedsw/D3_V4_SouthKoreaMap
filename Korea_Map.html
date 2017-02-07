@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  	<meta charset="utf-8">
+  	<title>Special Food in South Korea</title>
+  </head>
+  <style>
+    .graph-svg-component {
+    background-color: #a8daf7;
+    }
+    .Province {
+    fill: #efefef;
+    stroke: #fff;
+  }
+  .selected {
+    fill: #2F4F4F;
+  }
+  .province-label {
+    font-size: 10px;
+  }
+}
+  </style>
+  <body>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+    <div id="chart">
+      <h2>대한민국 2017 대선 지지율</h2>
+    </div>
+    <!--지도 여기에 들어가염..  -->
+    <script>
+      var width = 800;
+          height = 600;
+
+      var svg = d3.select("#chart")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .attr("class","graph-svg-component");
+
+      var projection = d3.geoMercator()
+            .center([128, 36])
+            .scale(5000)
+            .translate([width/2, height/2]);
+
+      var path = d3.geoPath()
+            .projection(projection);
+
+      d3.queue()
+        .defer(d3.json,"d3/skorea-provinces-topo.json")
+        .defer(d3.csv,"Province.csv")
+        .await(ready)
+
+
+      function ready (error, kor, province) {
+        var korea = topojson.feature(kor, kor.objects['skorea-provinces-geo']).features
+    //    console.log(kor.objects['skorea-provinces-geo'])
+
+          svg.selectAll('.Province')
+            .data(korea)
+            .enter()
+            .append('path')
+            .attr('class', 'Province')
+            .attr('d', path)
+            .on('mouseover', function(d){
+              //마우스 올라갔을 때 변경
+              d3.select(this).classed("selected", true);
+            })
+            .on('mouseout', function(d){
+              //마우스 내려갔을 때 변경
+              d3.select(this).classed("selected", false);
+            })
+
+            svg.selectAll("province-circle")
+                .data(province)
+                .enter().append("circle")
+                .attr("r", 2)
+                .attr("cx", function(d){
+                  var lonlat = projection([d.lon, d.lat])
+                  console.log(lonlat);
+                  return lonlat[0];
+                })
+                .attr("cy", function(d){
+                  var lonlat = projection([d.lon, d.lat])
+                  console.log(lonlat);
+                  return lonlat[1];
+                })
+
+                svg.selectAll(".province-label")
+                    .data(province)
+                    .enter().append("text")
+                    .attr("class","province-label")
+                    .attr("x", function(d) {
+                      var lonlat = projection([d.lon, d.lat])
+                      return lonlat[0];
+                    })
+                    .attr("y", function(d) {
+                      var lonlat = projection([d.lon, d.lat])
+                      return lonlat[1];
+                    })
+                    .text(function(d) {
+                      return d.name
+                    })
+                    .attr("dx", 5)
+                    .attr("dy", 2)
+
+      }//end ready
+
+
+
+    </script>
+  </body>
+</html>
