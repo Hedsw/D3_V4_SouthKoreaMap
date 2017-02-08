@@ -47,247 +47,27 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
     <div id="tooltip-container"></div>
-    <div id="chart"><h2>대한민국 2017-02-01 지역별 정당 지지율</h2>
+    <div id="chart">
+    <h2>대한민국 2017-02-01 지역별 정당 지지율</h2>
     <h4>By Yunhyeok Lee :) </h4>
     </div>
+    현대 정치사에 기록될 사상 최대 규모의 정치 실험의 현장 <br>
+제13대 대통령 선거의 재현이 예상되었으나 완전히 다른 결과가 연출된 선거 <br>
+16대 총선 이후 정치 삼국지의 재현 <br>
+그리고 한국이 헌정 사상 최악의 정치 스캔들을 엄청난 임팩트로 돌파하는 기반을 마련한 선거[2]
 
+선거결과를 나타낸 실제지형지도들의 전형적인 특징으로 지도상으로는 비대한 면적을 지닌 강원도와 경상도를 아우르는 적색의 새누리당이 압도적으로 우세해보이나, 수도권의 미칠 듯한 인구 밀집으로 실제로는 수도권에서 이긴 청색 더민주의 접전승리였다. <br>
+단, 더민주의 경우 지지기반인 호남을 잃었기 때문에 반쪽 승리라는 평가도 나오고 있다. 국민의당은 호남에서의 지지기반 이탈을 동교동계 인사들을 주축으로 흡수한 것으로 나타난다.
+요약하자면, 새누리당은 망했고 더민주, 국민의당은 기회를 얻었다. 자세히 본다면 새누리당에 대해 돌아서버린 민심 / 새누리당의 대항마로 선택됐으나 전통적 지지기반이였던 호남권 상실로 인한 저조한 비례대표 성적이란 절반 뿐인 승리를 받게 된 더불어민주당[3]  <br>/ 현행 양당 체제의 불신과 불만에 대한 대안으로 선택되었으나 지역구는 호남에 한정된 국민의당. 그리고 여전히 인지도 부족한 정의당으로 정리된다. <br>
+한 마디로, 여당의 패배이자 범야권의 승리이긴 하지만 야권의 3개 정당에게는 각기 해결해야 할 과제를 준 셈이다. <br> 종합하자면 그 어떤 당에게도 안주할 수 없는 결과를 준 투표로 해석 할 수 있다. 새누리는 발등에 불이 떨어졌고, 더불어민주당은 승리는 했으나 그 승리가 유동표에 의한 것이고 고정층들이 대거 빠져나갔으며 정당투표율이 낮아 사실 꽤 불안하다.  <br>
+국민의당은 이제 갓 메이저 정당 반열에 낀 수준이다. 그러나, 정의당은 불이 떨어질 발등도 사실상 구축(...) 이 안 된 상태다.
+그러나 이와 관련해서 새누리당 입장에서 더 치명적이라고 할 수 있는 것이, 어쨌든 호남 지역은 국민의당을 대체적으로 선택해 야권성향을 아직 유지한 상태이다.  <br>
+물론 호남에서 새누리당이 2석을 차지했으나 영남의 패배에 의해 많이 묻힌 감이 있고, 정운천 의원은 이정현 의원에 비해 기반을 더 쌓아야 한다. 더민주도 3석을 차지했다는 점에서 결론적으로 새누리당의 피해가 더 크다고 할 수 있다.
+새누리당은 야권이 더불어민주당과 국민의당으로 분열했지만, 그를 이용 못하고 전통적 지지기반이었던 대구에서 조차 더민주 김부겸, 야권 무소속 홍의락[4]에게 의석을 내줬고, 부산에서 5개구, 울산에서 3개구, 경남에서 4개구에서 패배했다.  <br>
+국민의당은 호남민심을 반영하듯 호남을 싹쓸이했고, 더불어민주당은 수도권에 강세를 보였다. 물론, 이는 수도권 지역에서 야권 지지자들이 지역구는 더민주에 비례투표는 다른 곳에 투표하는 교차투표를 했던 것도 크게 작용하긴 했다.
+ <br>
+By yunhyeok lee <br> 기사는 오마이뉴스에서 발췌 하였습니다. :)  https://namu.wiki/w/%EC%A0%9C20%EB%8C%80%20%EA%B5%AD%ED%9A%8C%EC%9D%98%EC%9B%90%20%EC%84%A0%EA%B1%B0/%EC%A0%95%EB%8B%B9%EB%B3%84%20%EA%B2%B0%EA%B3%BC
     <!--지도 여기에 들어가염..  -->
-    <script>
-      var width = 800;
-          height = 600;
-
-      var svg = d3.select("#chart")
-          .append("svg")
-          .attr("width", width)
-          .attr("height", height)
-          .attr("class","graph-svg-component");
-
-      var projection = d3.geoMercator()
-            .center([128, 36])
-            .scale(5000)
-            .translate([width/2, height/2]);
-
-      var path = d3.geoPath()
-            .projection(projection);
-
-      d3.queue()
-        .defer(d3.json,"d3/skorea-provinces-topo.json")
-        .defer(d3.csv,"Province.csv")
-        .await(ready)
-
-      var config = {"color1":"#b3c6ff","color2":"#3366ff","stateDataColumn":"name","valueDataColumn":"더불어민주당"}
-//#FF69B4 -> hotpink | 	#3366ff -> 진한 파랑 |  #b3c6ff->좀더 연한 파랑
-      var COLOR_COUNTS = 9;
-      var SCALE = 0.7;
-
-      function Interpolate(start, end, steps, count) {
-          var s = start,
-              e = end,
-              final = s + (((e - s) / steps) * count);
-          return Math.floor(final);
-      }
-
-      function Color(_r, _g, _b) {
-          var r, g, b;
-          var setColors = function(_r, _g, _b) {
-              r = _r;
-              g = _g;
-              b = _b;
-          };
-
-          setColors(_r, _g, _b);
-          this.getColors = function() {
-              var colors = {
-                  r: r,
-                  g: g,
-                  b: b
-              };
-              return colors;
-          };
-      }
-
-      function hexToRgb(hex) {
-        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-      }
-
-      function valueFormat(d) {
-        if (d > 1000000000) {
-          return Math.round(d / 1000000000 * 10) / 10 + "B";
-        } else if (d > 1000000) {
-          return Math.round(d / 1000000 * 10) / 10 + "M";
-        } else if (d > 1000) {
-          return Math.round(d / 1000 * 10) / 10 + "K";
-        } else {
-          return d;
-        }
-      }
-
-      var COLOR_FIRST = config.color1, COLOR_LAST = config.color2;
-
-      var rgb = hexToRgb(COLOR_FIRST);
-      var valueById = d3.map();
-
-      var COLOR_START = new Color(rgb.r, rgb.g, rgb.b);
-
-      rgb = hexToRgb(COLOR_LAST);
-      var COLOR_END = new Color(rgb.r, rgb.g, rgb.b);
-
-      var MAP_STATE = config.stateDataColumn;
-      var MAP_VALUE = config.valueDataColumn;
-
-      var startColors = COLOR_START.getColors(),
-          endColors = COLOR_END.getColors();
-
-      var colors = [];
-
-      for (var i = 0; i < COLOR_COUNTS; i++) {
-        var r = Interpolate(startColors.r, endColors.r, COLOR_COUNTS, i);
-        var g = Interpolate(startColors.g, endColors.g, COLOR_COUNTS, i);
-        var b = Interpolate(startColors.b, endColors.b, COLOR_COUNTS, i);
-        colors.push(new Color(r, g, b));
-      }
-
-      var quantize = d3.scaleQuantize()
-        .domain([0, 1.0])
-        .range(d3.range(COLOR_COUNTS).map(function(i) { return i }));
-
-      function ready (error, kor, province) {
-
-        name_id_map = {};
-        id_name_map = {};
-
-        for (var i = 0; i < province.length; i++) {
-           name_id_map[province[i].name] = province[i].id;
-           id_name_map[province[i].id] = province[i].name;
-        }
-        province.forEach(function(d) {
-          var id = name_id_map[d[MAP_STATE]];
-          valueById.set(id, +d[MAP_VALUE]);
-        });
-
-//valueById <-- 이 값이 전혀 들어가지가 않음.. 내 생각엔 159-162 사이에 저 문구가 문제가 생겨서 안들어 가는것 같음..
-// 저거 문제를 해결하고, 173라인 fill부터 해결 하고, 클릭시에 뭐 변하는거 하자.
-        quantize.domain([d3.min(province, function(d){ return +d[MAP_VALUE]}),
-          d3.max(province, function(d){ return +d[MAP_VALUE] })]);
-
-        var korea = topojson.feature(kor, kor.objects['skorea-provinces-geo']).features
-          svg.selectAll('.Province')
-            .data(korea)
-            .enter()
-            .append("path")
-            .style("fill", function(d) {
-              if (valueById.get(d.properties.ID_1)) {
-
-                var i = quantize(valueById.get(d.properties.ID_1));
-                var color = colors[i].getColors();
-                return "rgb(" + color.r + "," + color.g +
-                    "," + color.b + ")";
-              } else {
-                console.log("이거 되?");
-                return "rgb(#0066ff,#99ccff,#123456)";
-              }
-            })
-            .attr('d', path)
-            .on('mouseover', function(d,i){
-              //아래에서 값 받아 올때는 이렇게 아래에서 받아야 함..
-              //데이터를 넣고 싶으면 아래 처럼 하면 넣을 수 있어
-
-          //    console.log(province[i].name);
-          //    console.log(province[i].국민의당);
-          //    마우스 올라갔을 때 변경
-
-              var html = "";
-              html += "<div class =\"tooltip_key\">";
-              html += "<span class=\"tooltip_key\">";
-              html += province[i].name;
-              html += "</span>";
-              html += "<span class=\"tooltip_value\">";
-              html += "<p>국민의당 - "
-              html += (province[i].국민의당 ? valueFormat(province[i].국민의당) : "");
-              html += "%</p>";
-              html += "<p>더불어민주당 - "
-              html += (province[i].더불어민주당 ? valueFormat(province[i].더불어민주당) : "");
-              html += "%</p>";
-              html += "<p>바른정당 - "
-              html += (province[i].바른정당 ? valueFormat(province[i].바른정당) : "");
-              html += "%</p>";
-              html += "<p>새누리당 - "
-              html += (province[i].새누리당 ? valueFormat(province[i].새누리당) : "");
-              html += "%</p>";
-              html += "<p>정의당 - "
-              html += (province[i].정의당 ? valueFormat(province[i].정의당) : "");
-              html += "%</p>";
-              html += "</span>";
-              html += "</div>";
-
-               $("#tooltip-container").html(html);
-               $(this).attr("fill-opacity", "0.8");
-               $("#tooltip-container").show();
-
-
-                var coordinates = d3.mouse(this);
-
-                var map_width = svg.node().getBoundingClientRect().width;
-                if (d3.event.layerX < map_width / 2) {
-                  d3.select("#tooltip-container")
-                    .style("top", (d3.event.layerY + 15) + "px")
-                    .style("left", (d3.event.layerX + 15) + "px");
-                } else {
-                  var tooltip_width = $("#tooltip-container").width();
-                  d3.select("#tooltip-container")
-                    .style("top", (d3.event.layerY + 15) + "px")
-                    .style("left", (d3.event.layerX - tooltip_width - 30) + "px");
-                }
-            })
-
-            .on('mouseout', function(d){
-              //마우스 내려갔을 때 변경
-              $(this).attr("fill-opacity", "1.0");
-              $("#tooltip-container").hide();
-            })
-
-            svg.selectAll("province-circle")
-                .data(province)
-                .enter().append("circle")
-                .attr("r", 2)
-                .attr("cx", function(d){
-                  var lonlat = projection([d.lon, d.lat])
-                //  console.log(lonlat);
-                  return lonlat[0];
-                })
-                .attr("cy", function(d){
-                  var lonlat = projection([d.lon, d.lat])
-              //    console.log(lonlat);
-                  return lonlat[1];
-                })
-
-                svg.selectAll(".province-label")
-                    .data(province)
-                    .enter().append("text")
-                    .attr("class","province-label")
-                    .attr("x", function(d) {
-                      var lonlat = projection([d.lon, d.lat])
-                      return lonlat[0];
-                    })
-                    .attr("y", function(d) {
-                      var lonlat = projection([d.lon, d.lat])
-                      return lonlat[1];
-                    })
-                    .text(function(d) {
-                      return d.name
-                    })
-                    .attr("dx", 5)
-                    .attr("dy", 2)
-
-      }//end ready
-
-
-    </script>
-
+    <script src = 'southkorea.js'></script>
   </body>
 </html>
