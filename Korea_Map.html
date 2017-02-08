@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
   	<meta charset="utf-8">
-  	<title>Special Food in South Korea</title>
+  	<title>2017 Election - SouthKorea</title>
   </head>
   <style>
     .graph-svg-component {
@@ -18,7 +18,7 @@
     #tooltip-container {
     position: absolute;
     border-radius: 25px;
-    background: #FFF8DC;
+    background: #f2f2f2;
     color: #123445;
     padding: 10px;
     border: 1px solid;
@@ -29,7 +29,7 @@
     }
     .tooltip_value {
 
-      margin-left: 20px;
+      margin-left: 10px;
       float: right;
     }
     .states {
@@ -47,7 +47,9 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
     <div id="tooltip-container"></div>
-    <div id="chart"><h2>대한민국 2017 대선 지지율</h2></div>
+    <div id="chart"><h2>대한민국 2017-02-01 지역별 정당 지지율</h2>
+    <h4>By Yunhyeok Lee :) </h4>
+    </div>
 
     <!--지도 여기에 들어가염..  -->
     <script>
@@ -73,8 +75,8 @@
         .defer(d3.csv,"Province.csv")
         .await(ready)
 
-      var config = {"color1":"#4169E1","color2":"#2E8B57","stateDataColumn":"name","valueDataColumn":"2016_pop"}
-
+      var config = {"color1":"#b3c6ff","color2":"#3366ff","stateDataColumn":"name","valueDataColumn":"더불어민주당"}
+//#FF69B4 -> hotpink | 	#3366ff -> 진한 파랑 |  #b3c6ff->좀더 연한 파랑
       var COLOR_COUNTS = 9;
       var SCALE = 0.7;
 
@@ -191,22 +193,35 @@
               }
             })
             .attr('d', path)
-            .on('mouseover', function(d){
-              //값이 정확하게 들어가지가 않아... 이거 왜 이렇지 ..ㅠㅠ 아오 짜증나
-              console.log(d);
-              console.log(valueById.get(d.properties.ID_1));
-              console.log(d.properties);
-              console.log(valueById.get(10));
-              //마우스 올라갔을 때 변경
-            //  console.log(valueById.get(d.properties.ID_1));
+            .on('mouseover', function(d,i){
+              //아래에서 값 받아 올때는 이렇게 아래에서 받아야 함..
+              //데이터를 넣고 싶으면 아래 처럼 하면 넣을 수 있어
+
+          //    console.log(province[i].name);
+          //    console.log(province[i].국민의당);
+          //    마우스 올라갔을 때 변경
+
               var html = "";
               html += "<div class =\"tooltip_key\">";
               html += "<span class=\"tooltip_key\">";
-              html += d.properties.NAME_1;
+              html += province[i].name;
               html += "</span>";
               html += "<span class=\"tooltip_value\">";
-              html += (valueById.get(d));
-              html += "";
+              html += "<p>국민의당 - "
+              html += (province[i].국민의당 ? valueFormat(province[i].국민의당) : "");
+              html += "%</p>";
+              html += "<p>더불어민주당 - "
+              html += (province[i].더불어민주당 ? valueFormat(province[i].더불어민주당) : "");
+              html += "%</p>";
+              html += "<p>바른정당 - "
+              html += (province[i].바른정당 ? valueFormat(province[i].바른정당) : "");
+              html += "%</p>";
+              html += "<p>새누리당 - "
+              html += (province[i].새누리당 ? valueFormat(province[i].새누리당) : "");
+              html += "%</p>";
+              html += "<p>정의당 - "
+              html += (province[i].정의당 ? valueFormat(province[i].정의당) : "");
+              html += "%</p>";
               html += "</span>";
               html += "</div>";
 
@@ -272,7 +287,7 @@
       }//end ready
 
 
-
     </script>
+
   </body>
 </html>
