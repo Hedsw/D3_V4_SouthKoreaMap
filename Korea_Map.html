@@ -6,27 +6,49 @@
   </head>
   <style>
     .graph-svg-component {
-    background-color: #a8daf7;
+    background-color: #ffffff;
     }
     .Province {
     fill: #efefef;
     stroke: #fff;
-  }
-  .selected {
-    fill: #2F4F4F;
-  }
-  .province-label {
-    font-size: 10px;
-  }
-}
+    }
+    .province-label {
+      font-size: 10px;
+    }
+    #tooltip-container {
+    position: absolute;
+    border-radius: 25px;
+    background: #FFF8DC;
+    color: #123445;
+    padding: 10px;
+    border: 1px solid;
+    display: none;
+    }
+    .tooltip_key {
+      font-weight: bold;
+    }
+    .tooltip_value {
+
+      margin-left: 20px;
+      float: right;
+    }
+    .states {
+      fill: none;
+      stroke: #fff;
+      stroke-linejoin: round;
+    }
+    .states-choropleth {
+      fill: #ccc;
+    }
   </style>
   <body>
     <script src="http://d3js.org/d3.v4.min.js"></script>
     <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
-    <div id="chart">
-      <h2>대한민국 2017 대선 지지율</h2>
-    </div>
+    <div id="tooltip-container"></div>
+    <div id="chart"><h2>대한민국 2017 대선 지지율</h2></div>
+
     <!--지도 여기에 들어가염..  -->
     <script>
       var width = 800;
@@ -51,24 +73,167 @@
         .defer(d3.csv,"Province.csv")
         .await(ready)
 
+      var config = {"color1":"#4169E1","color2":"#2E8B57","stateDataColumn":"name","valueDataColumn":"2016_pop"}
+
+      var COLOR_COUNTS = 9;
+      var SCALE = 0.7;
+
+      function Interpolate(start, end, steps, count) {
+          var s = start,
+              e = end,
+              final = s + (((e - s) / steps) * count);
+          return Math.floor(final);
+      }
+
+      function Color(_r, _g, _b) {
+          var r, g, b;
+          var setColors = function(_r, _g, _b) {
+              r = _r;
+              g = _g;
+              b = _b;
+          };
+
+          setColors(_r, _g, _b);
+          this.getColors = function() {
+              var colors = {
+                  r: r,
+                  g: g,
+                  b: b
+              };
+              return colors;
+          };
+      }
+
+      function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+      }
+
+      function valueFormat(d) {
+        if (d > 1000000000) {
+          return Math.round(d / 1000000000 * 10) / 10 + "B";
+        } else if (d > 1000000) {
+          return Math.round(d / 1000000 * 10) / 10 + "M";
+        } else if (d > 1000) {
+          return Math.round(d / 1000 * 10) / 10 + "K";
+        } else {
+          return d;
+        }
+      }
+
+      var COLOR_FIRST = config.color1, COLOR_LAST = config.color2;
+
+      var rgb = hexToRgb(COLOR_FIRST);
+      var valueById = d3.map();
+
+      var COLOR_START = new Color(rgb.r, rgb.g, rgb.b);
+
+      rgb = hexToRgb(COLOR_LAST);
+      var COLOR_END = new Color(rgb.r, rgb.g, rgb.b);
+
+      var MAP_STATE = config.stateDataColumn;
+      var MAP_VALUE = config.valueDataColumn;
+
+      var startColors = COLOR_START.getColors(),
+          endColors = COLOR_END.getColors();
+
+      var colors = [];
+
+      for (var i = 0; i < COLOR_COUNTS; i++) {
+        var r = Interpolate(startColors.r, endColors.r, COLOR_COUNTS, i);
+        var g = Interpolate(startColors.g, endColors.g, COLOR_COUNTS, i);
+        var b = Interpolate(startColors.b, endColors.b, COLOR_COUNTS, i);
+        colors.push(new Color(r, g, b));
+      }
+
+      var quantize = d3.scaleQuantize()
+        .domain([0, 1.0])
+        .range(d3.range(COLOR_COUNTS).map(function(i) { return i }));
 
       function ready (error, kor, province) {
-        var korea = topojson.feature(kor, kor.objects['skorea-provinces-geo']).features
-    //    console.log(kor.objects['skorea-provinces-geo'])
 
+        name_id_map = {};
+        id_name_map = {};
+
+        for (var i = 0; i < province.length; i++) {
+           name_id_map[province[i].name] = province[i].id;
+           id_name_map[province[i].id] = province[i].name;
+        }
+        province.forEach(function(d) {
+          var id = name_id_map[d[MAP_STATE]];
+          valueById.set(id, +d[MAP_VALUE]);
+        });
+
+//valueById <-- 이 값이 전혀 들어가지가 않음.. 내 생각엔 159-162 사이에 저 문구가 문제가 생겨서 안들어 가는것 같음..
+// 저거 문제를 해결하고, 173라인 fill부터 해결 하고, 클릭시에 뭐 변하는거 하자.
+        quantize.domain([d3.min(province, function(d){ return +d[MAP_VALUE]}),
+          d3.max(province, function(d){ return +d[MAP_VALUE] })]);
+
+        var korea = topojson.feature(kor, kor.objects['skorea-provinces-geo']).features
           svg.selectAll('.Province')
             .data(korea)
             .enter()
-            .append('path')
-            .attr('class', 'Province')
+            .append("path")
+            .style("fill", function(d) {
+              if (valueById.get(d.properties.ID_1)) {
+
+                var i = quantize(valueById.get(d.properties.ID_1));
+                var color = colors[i].getColors();
+                return "rgb(" + color.r + "," + color.g +
+                    "," + color.b + ")";
+              } else {
+                console.log("이거 되?");
+                return "rgb(#0066ff,#99ccff,#123456)";
+              }
+            })
             .attr('d', path)
             .on('mouseover', function(d){
+              //값이 정확하게 들어가지가 않아... 이거 왜 이렇지 ..ㅠㅠ 아오 짜증나
+              console.log(d);
+              console.log(valueById.get(d.properties.ID_1));
+              console.log(d.properties);
+              console.log(valueById.get(10));
               //마우스 올라갔을 때 변경
-              d3.select(this).classed("selected", true);
+            //  console.log(valueById.get(d.properties.ID_1));
+              var html = "";
+              html += "<div class =\"tooltip_key\">";
+              html += "<span class=\"tooltip_key\">";
+              html += d.properties.NAME_1;
+              html += "</span>";
+              html += "<span class=\"tooltip_value\">";
+              html += (valueById.get(d));
+              html += "";
+              html += "</span>";
+              html += "</div>";
+
+               $("#tooltip-container").html(html);
+               $(this).attr("fill-opacity", "0.8");
+               $("#tooltip-container").show();
+
+
+                var coordinates = d3.mouse(this);
+
+                var map_width = svg.node().getBoundingClientRect().width;
+                if (d3.event.layerX < map_width / 2) {
+                  d3.select("#tooltip-container")
+                    .style("top", (d3.event.layerY + 15) + "px")
+                    .style("left", (d3.event.layerX + 15) + "px");
+                } else {
+                  var tooltip_width = $("#tooltip-container").width();
+                  d3.select("#tooltip-container")
+                    .style("top", (d3.event.layerY + 15) + "px")
+                    .style("left", (d3.event.layerX - tooltip_width - 30) + "px");
+                }
             })
+
             .on('mouseout', function(d){
               //마우스 내려갔을 때 변경
-              d3.select(this).classed("selected", false);
+              $(this).attr("fill-opacity", "1.0");
+              $("#tooltip-container").hide();
             })
 
             svg.selectAll("province-circle")
@@ -77,12 +242,12 @@
                 .attr("r", 2)
                 .attr("cx", function(d){
                   var lonlat = projection([d.lon, d.lat])
-                  console.log(lonlat);
+                //  console.log(lonlat);
                   return lonlat[0];
                 })
                 .attr("cy", function(d){
                   var lonlat = projection([d.lon, d.lat])
-                  console.log(lonlat);
+              //    console.log(lonlat);
                   return lonlat[1];
                 })
 
